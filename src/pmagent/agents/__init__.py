@@ -20,6 +20,7 @@ from pmagent.agents.patch import (
     apply_patch,
     revert_patch,
 )
+from pmagent.agents.toolbroker import ToolBroker
 from pmagent.agents.triage import stage_label, triage, verification_steps
 
 __all__ = [
@@ -41,6 +42,7 @@ __all__ = [
     "PatchAuthor",
     "PatchGenerator",
     "PatchStore",
+    "ToolBroker",
     "apply_patch",
     "extract_features",
     "render_markdown",

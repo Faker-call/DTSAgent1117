@@ -1,3 +1,8 @@
+from pmagent.orchestrator.diagnosis import (
+    DiagnosisOutcome,
+    DiagnosisRunner,
+    MultiAgentDiagnosis,
+)
 from pmagent.orchestrator.multiagent import (
     AGENT_SPECS,
     Coordinator,
@@ -24,6 +29,9 @@ __all__ = [
     "Critic",
     "DispatchMetrics",
     "DispatchResult",
+    "DiagnosisOutcome",
+    "DiagnosisRunner",
+    "MultiAgentDiagnosis",
     "Pipeline",
     "PipelineResult",
     "RetrievalAgent",

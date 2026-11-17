@@ -54,10 +54,9 @@ def test_missing_option_exits_two() -> None:
     assert result.returncode == 2
 
 
-def test_placeholder_command_exits_one() -> None:
+def test_explain_requires_argument() -> None:
     result = _run("explain")
-    assert result.returncode == 1
-    assert "尚未实现" in result.stderr
+    assert result.returncode == 2
 
 
 def test_fault_exit_codes() -> None:

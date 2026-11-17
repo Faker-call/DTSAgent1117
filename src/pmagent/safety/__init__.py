@@ -1,5 +1,6 @@
 """安全与治理层：写路径白名单、注入防护、命令模板、执行器、校验、进度与回放（M16）。"""
 
+from pmagent.safety.audit import jsonl_audit
 from pmagent.safety.commands import TEMPLATES, allowed_commands, validate_command
 from pmagent.safety.executor import DEFAULT_LIMITS, Executor, ToolSpec
 from pmagent.safety.guardrails import WRITABLE_DIRS, Guardrails
@@ -30,6 +31,7 @@ __all__ = [
     "WRITABLE_DIRS",
     "allowed_commands",
     "default_suite",
+    "jsonl_audit",
     "record_progress",
     "scan",
     "tool_calls_in",

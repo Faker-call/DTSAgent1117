@@ -63,6 +63,20 @@ src/pmagent/
 - **安全与治理**（`safety/`）：写路径白名单、注入检测与不可信数据包裹、命令模板化、唯一执行器与审计、不可跳过校验、进度快照与停滞/振荡/循环治理、硬上限、运行回放、离线降级。
 - **评测**（`eval/`）：种子集导入与标注缺失统计、检索/定位/结论指标、报告对比与退化用例、置信度校准、双人标注一致性、人工评审回写、留出集门禁。
 
+## 主流程接线
+
+`diagnose` 不再直接调用 `DiagnosisAgent.run`，而是经 `DiagnosisRunner` 编排：
+
+1. `ToolBroker` 把切片/调用方查询包装成 `ToolProposal`，经 `PolicyEngine` 裁决与 `Executor` 执行，前后写 `audit.jsonl`；
+2. 候选登记进 `EvidenceLedger`，得到全局证据编号；
+3. 每个阶段生成 `ProgressSnapshot` 并写 `progress` 事件，由 `ProgressGovernor` 判定继续/换路/收敛/中止；
+4. 报告产出后跑不可跳过的 `ValidationSuite`（引用、自洽、编译），失败即拒绝；
+5. `ask` 的检索结果按查询/语料/版本写入 `ResultCache`，二次命中会标注"来自缓存"；
+6. `explain` 与 `diagnose --resume <run_id>` 已可用；`diagnose --multi-agent` 会先并行扇出检索分支（`Coordinator` + `RetrievalAgent`），再收敛为单份报告；
+7. 补丁生成的模型调用经 `MeteredGateway` 记账，超出 `budget.max_cost_cny` 立即终止；
+8. 假设生成前用 `ContextCompressor` 把候选切片压到预算内，`BudgetLedger` 按阶段预留/消耗 token；
+9. 模型提示词中的仓库内容统一经 `wrap()` 包裹为不可信数据。
+
 ## 待实现
 
 - `explain`（符号/代码位置解释）命令仍为占位；

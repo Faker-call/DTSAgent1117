@@ -23,7 +23,7 @@
 | `pmagent review --wrong/--correct` | 结论纠正与反例沉淀 | 已实现 |
 | `pmagent memory list/forget` | 长期案例查看与下架 | 已实现 |
 | `pmagent patch generate/list/apply/revert` | 补丁生成、查看、应用（需 `--yes`）与回滚 | 已实现 |
-| `pmagent explain` | 解释符号或代码位置 | 占位 |
+| `pmagent explain` | 解释符号或文件行号（签名、位置、片段） | 已实现 |
 | `pmagent eval run/compare/calibrate/agreement/review/replay` | 离线评测、对比、校准、标注一致性、人工评审与回放 | 已实现 |
 
 命令与权限的对应关系见 [rbac.md](rbac.md)。

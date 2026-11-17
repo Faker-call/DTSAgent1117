@@ -96,3 +96,33 @@ class CostMeter:
             "total_tokens": self.total_tokens,
             "by_role": dict(self.by_role),
         }
+
+
+class MeteredGateway:
+    """网关包装：每次调用后按 token 记账，超预算立即失败。"""
+
+    def __init__(self, gateway: Any, meter: CostMeter) -> None:
+        self.gateway = gateway
+        self.meter = meter
+
+    def complete(self, messages: Any, **kwargs: Any) -> Any:
+        response = self.gateway.complete(messages, **kwargs)
+        role = str(kwargs.get("role") or "reasoner")
+        self.meter.record(
+            role=role,
+            model=getattr(response, "model", "unknown"),
+            prompt_tokens=int(getattr(response, "prompt_tokens", 0)),
+            completion_tokens=int(getattr(response, "completion_tokens", 0)),
+            cached_tokens=int(getattr(response, "cached_tokens", 0)),
+        )
+        return response
+
+
+__all__ = [
+    "CostMeter",
+    "MeteredGateway",
+    "PRICING",
+    "Price",
+    "cost_of",
+    "price_for",
+]

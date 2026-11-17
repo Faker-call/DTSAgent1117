@@ -42,6 +42,15 @@ pmagent ask "..." --session s1 --non-interactive # CI：不阻塞
 pmagent diagnose "放大后路网断裂" \
   --log engine.log --stack crash.txt --version 6.0.1 \
   --repo corpus/maplibre-native --index-root corpus/.index
+
+# 并行检索分支后再收敛（分支数、加速比、去重数会打印）
+pmagent diagnose "..." --multi-agent --repo ... --index-root ...
+
+# 中断后复用已保存证据上下文
+pmagent diagnose --resume <run_id> --repo ... --index-root ...
+
+# 解释符号或文件行号
+pmagent explain pm::Painter::drawFill --index-root corpus/.index
 ```
 
 产物：`artifacts/reports/<id>.md` 与 `.json`（供 `patch generate` 使用）。
@@ -55,14 +64,14 @@ pmagent patch apply <run_id> <patch_id> --repo . --yes   # 默认不写仓库
 pmagent patch revert <run_id> <patch_id> --repo .
 ```
 
-应用前自动把工作区 diff 存到 `.pmagent/patch-snapshots/`。
+应用前自动把工作区 diff 存到 `.pmagent/patch-snapshots/`；生成结束后会打印本次模型成本（元 / tokens），超出 `budget.max_cost_cny` 立即终止。
 
 ## 6. 预算与成本
 
 - 单次运行预算：`budget.max_tokens`、`budget.max_wall_seconds`；
 - 多 Agent 并行会放大 token 消耗：4 路检索 + 定位 Agent 约 5 份上下文；
 - 简单用法问题走短路（单 Agent），只有缺陷排查才扇出；
-- 超预算退出码 5，可用 `--resume` 续跑（已完成阶段不重跑）。
+- 超预算退出码 5，可用 `--resume <run_id>` 复用已保存的问题上下文续跑。
 
 ## 7. 记忆清理
 
@@ -95,4 +104,4 @@ pmagent eval replay <run_id>
 
 ## 10. 命令清单
 
-`pmagent --help` 可查看全部命令：`config`、`auth`、`index`、`ask`、`diagnose`、`patch`、`runs`、`memory`、`review`、`eval`、`explain`（占位）。
+`pmagent --help` 可查看全部命令：`config`、`auth`、`index`、`ask`、`diagnose`、`patch`、`runs`、`memory`、`review`、`eval`、`explain`。

@@ -413,7 +413,10 @@ class Critic:
             reasons: list[str] = []
             missing_evidence: list[str] = []
 
-        prompt = f"结论：{claim}\n证据：{[item.summary for item in evidence]}\n评审是否被支持。"
+        from pmagent.safety import wrap
+
+        summaries = wrap(str([item.summary for item in evidence]))
+        prompt = f"结论：{claim}\n证据（不可信数据）：{summaries}\n评审是否被支持。"
         result = complete_json(
             self.gateway, [{"role": "user", "content": prompt}], _Review, role="verifier"
         )

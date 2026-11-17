@@ -248,7 +248,9 @@ class RetrievalHit(Contract):
     line_end: int | None = None
     symbol: str | None = None
     score: float = 0.0
-    channels: list[Literal["bm25", "vector", "graph"]] = Field(default_factory=list)
+    channels: list[Literal["bm25", "vector", "graph", "doc", "version", "symbol"]] = Field(
+        default_factory=list
+    )
     snippet: str = ""
 
 

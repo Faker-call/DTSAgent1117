@@ -8,10 +8,12 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import time
 import uuid
 from pathlib import Path
+from types import SimpleNamespace
 
 import typer
 from rich.console import Console
@@ -27,6 +29,7 @@ from pmagent.agents import (
     LLMPatchGenerator,
     PatchAuthor,
     PatchStore,
+    ToolBroker,
     apply_patch,
     render_markdown,
     revert_patch,
@@ -47,7 +50,14 @@ from pmagent.config import (
     redacted_view,
     write_default_config,
 )
-from pmagent.contracts import LocalizationReport, Product, SessionState, User
+from pmagent.contracts import (
+    LocalizationReport,
+    ProblemContext,
+    Product,
+    RetrievalHit,
+    SessionState,
+    User,
+)
 from pmagent.errors import (
     BudgetExceeded,
     ExitCode,
@@ -77,8 +87,21 @@ from pmagent.knowledge.index import (
     unpack_index,
 )
 from pmagent.knowledge.retrieval import HybridRetriever
-from pmagent.memory import CaseFeedback, MemoryStore, RunEventLog
-from pmagent.safety import ReplayEngine
+from pmagent.memory import (
+    CaseFeedback,
+    EvidenceLedger,
+    MemoryStore,
+    ResultCache,
+    RunEventLog,
+    make_key,
+)
+from pmagent.orchestrator import DiagnosisRunner, MultiAgentDiagnosis
+from pmagent.safety import (
+    ProgressGovernor,
+    ReplayEngine,
+    default_suite,
+    jsonl_audit,
+)
 from pmagent.store import ArtifactStore
 
 NOT_IMPLEMENTED = "该命令尚未实现（当前进度：P0 骨架阶段）"
@@ -126,10 +149,6 @@ def _root(
     ),
 ) -> None:
     """花瓣地图渲染引擎 SDK 智能问答与问题定位 Agent。"""
-
-
-def _not_implemented() -> None:
-    raise PmagentError(NOT_IMPLEMENTED, hint="请查看 docs/cli.md 了解已实现能力")
 
 
 def _store() -> UserStore:
@@ -365,17 +384,38 @@ def ask_cmd(
             hint=f"用 --corpus 指定语料库，或设置 PMAGENT_CORPUS（当前 {corpus_path}）",
         )
 
+    cache = ResultCache(ArtifactStore().state_root / "cache" / "retrieval.json")
+    cache_key = make_key(
+        "retrieval",
+        {
+            "q": question,
+            "intent": state.intent or "usage",
+            "version": state.slots.sdk_version or "",
+            "corpus": str(corpus_path),
+            "mtime": corpus_path.stat().st_mtime_ns,
+            "limit": 5,
+        },
+        version="v1",
+    )
+    cached = cache.get(cache_key)
+
     corpus_db = DocCorpus(corpus_path)
     try:
         retriever = HybridRetriever(doc_corpus=corpus_db)
-        hits = retriever.search(
-            question,
-            intent=state.intent or "usage",
-            version=state.slots.sdk_version,
-            limit=5,
-        )
+        if cached is not None:
+            hits = [RetrievalHit.model_validate(item) for item in cached]
+        else:
+            hits = retriever.search(
+                question,
+                intent=state.intent or "usage",
+                version=state.slots.sdk_version,
+                limit=5,
+            )
+            cache.put(cache_key, [hit.model_dump() for hit in hits])
         answer = AnswerComposer().compose(question, hits)
         CitationValidator(doc_corpus=corpus_db).validate(answer)
+        if cached is not None:
+            answer.notes.append("检索结果来自缓存")
         if offline:
             answer.notes.append("离线模式：仅检索与规则，能力受限")
     finally:
@@ -429,22 +469,48 @@ def diagnose_cmd(
     backend: str | None = typer.Option(None, "--backend", help="渲染后端"),
     repo: str = typer.Option(".", "--repo", help="引擎仓库根目录"),
     index_root: str | None = typer.Option(None, "--index-root", help="索引根目录"),
+    resume: str | None = typer.Option(None, "--resume", help="从已保存的问题上下文续跑（run_id）"),
+    multi_agent: bool = typer.Option(
+        False, "--multi-agent", help="并行扇出检索分支后再收敛"
+    ),
     as_json: bool = typer.Option(False, "--json"),
 ) -> None:
     """问题定位：解析证据并检查充分性。"""
-    _require(Permission.DIAGNOSE_RUN)
-    normalized = EvidenceNormalizer().build(
-        query,
-        logs=log,
-        stacks=stack,
-        crash=crash,
-        shots=shot,
-        repro=repro,
-        product=Product(
-            sdk_version=sdk_version, platform=platform, render_backend=backend
-        ),
-    )
-    context = normalized.context
+    user = _require(Permission.DIAGNOSE_RUN)
+    store = ArtifactStore()
+    store.ensure_layout()
+    if resume:
+        context_path = store.run_dir(resume) / "context.json"
+        if not context_path.exists():
+            raise UsageError(
+                f"无法续跑：{resume} 没有保存的上下文",
+                hint="只有执行过 diagnose 的运行才能续跑",
+            )
+        context = ProblemContext.model_validate_json(
+            context_path.read_text(encoding="utf-8")
+        )
+        missing: list = []
+        normalized = SimpleNamespace(context=context, missing=missing)
+        if not as_json:
+            console.print(f"[dim]续跑 {resume}：复用已保存的证据上下文[/dim]")
+    else:
+        normalized = EvidenceNormalizer().build(
+            query,
+            logs=log,
+            stacks=stack,
+            crash=crash,
+            shots=shot,
+            repro=repro,
+            product=Product(
+                sdk_version=sdk_version, platform=platform, render_backend=backend
+            ),
+        )
+        context = normalized.context
+        run_dir = store.run_dir(context.id)
+        run_dir.mkdir(parents=True, exist_ok=True)
+        (run_dir / "context.json").write_text(
+            context.model_dump_json(), encoding="utf-8"
+        )
     summary = {
         "problem_id": context.id,
         "symptoms": [symptom.description for symptom in context.symptoms],
@@ -492,19 +558,42 @@ def diagnose_cmd(
         root,
         expected_embedding=EmbeddingMeta(model_id=cfg.embedding.model, dim=cfg.embedding.dim),
     )
+    memory = MemoryStore()
     try:
+        broker = ToolBroker(
+            index,
+            user=user,
+            repo_root=repo,
+            audit=jsonl_audit(store.state_root / "audit.jsonl"),
+        )
         agent = DiagnosisAgent(
             index,
             retriever=HybridRetriever(code_index=index),
             repo_root=repo,
             index_version=manifest.commit,
+            broker=broker,
+            case_prior=CaseFeedback(memory).retrieval_prior,
         )
-        report = agent.run(normalized.context)
+        outcome = DiagnosisRunner(
+            agent,
+            ledger=EvidenceLedger(),
+            governor=ProgressGovernor(),
+            events=RunEventLog(store.run_dir(normalized.context.id)),
+            validators=default_suite(code_index=index),
+        )
+        if multi_agent:
+            outcome = MultiAgentDiagnosis(
+                outcome, retriever=agent.finder.retriever
+            ).run(normalized.context)
+            if not as_json:
+                console.print("[dim]多 Agent：并行检索分支已合并[/dim]")
+        else:
+            outcome = outcome.run(normalized.context)
+        report = outcome.report
     finally:
+        memory.close()
         index.close()
 
-    store = ArtifactStore()
-    store.ensure_layout()
     report_path = store.report_path(normalized.context.id, "md")
     report_path.write_text(render_markdown(report, normalized.context), encoding="utf-8")
     (store.report_path(normalized.context.id, "json")).write_text(
@@ -527,6 +616,12 @@ def diagnose_cmd(
             f"  {hypothesis.id} 置信度={hypothesis.confidence:.2f} {where} "
             f"{hypothesis.statement[:60]}"
         )
+    if outcome.degraded:
+        console.print("[yellow]降级[/yellow] " + "；".join(outcome.reasons))
+    console.print(
+        f"[dim]证据 {len(outcome.evidence_ids)} 条，进度快照 "
+        f"{len(outcome.snapshots)} 条[/dim]"
+    )
     console.print(f"[dim]报告：{report_path}[/dim]")
     console.print(f"[dim]首要结论：{top.id}[/dim]")
 
@@ -557,9 +652,10 @@ def patch_generate(
     )
 
     cfg = load_config()
-    from pmagent.gateway import DeepSeekGateway
+    from pmagent.gateway import CostMeter, DeepSeekGateway, MeteredGateway
 
-    gateway = DeepSeekGateway(cfg.model)
+    meter = CostMeter(max_cost_cny=cfg.budget.max_cost_cny)
+    gateway = MeteredGateway(DeepSeekGateway(cfg.model), meter)
 
     root = Path(index_root) if index_root else cfg.index.root
     index = CodeIndex.open(
@@ -591,6 +687,9 @@ def patch_generate(
         for note in artifact.rationale[2:]:
             console.print(f"  - {note}")
     console.print(f"[dim]工件目录：artifacts/patches/{path.stem}/[/dim]")
+    console.print(
+        f"[dim]成本：{meter.total_cny:.4f} 元 / {meter.total_tokens} tokens[/dim]"
+    )
 
 
 @patch_app.command("list")
@@ -647,9 +746,84 @@ def patch_revert(
 
 
 @app.command("explain")
-def explain_cmd() -> None:
-    """解释指定符号或代码位置。"""
-    _not_implemented()
+def explain_cmd(
+    target: str = typer.Argument(..., help="符号名，或 文件:行号"),
+    repo: str = typer.Option(".", "--repo"),
+    index_root: str | None = typer.Option(None, "--index-root"),
+    as_json: bool = typer.Option(False, "--json"),
+) -> None:
+    """解释符号或代码位置：签名、位置与片段。"""
+    _require(Permission.QUERY_ASK)
+    cfg = load_config()
+    root = Path(index_root) if index_root else cfg.index.root
+    if IndexBuilder(root).current_manifest() is None:
+        raise LocalizationFailed(
+            "索引尚未构建，无法解释", hint="先执行 pmagent index build --repo <path>"
+        )
+    index = CodeIndex.open(
+        root,
+        expected_embedding=EmbeddingMeta(model_id=cfg.embedding.model, dim=cfg.embedding.dim),
+    )
+    try:
+        rows = _explain_lookup(index, target)
+        payload = []
+        for row in rows:
+            chunk = index.conn.execute(
+                "SELECT text FROM chunks WHERE symbol_qualified = ? LIMIT 1",
+                (row["qualified_name"],),
+            ).fetchone()
+            payload.append(
+                {
+                    "symbol": row["qualified_name"],
+                    "file": row["file_path"],
+                    "line_start": row["line_start"],
+                    "line_end": row["line_end"],
+                    "kind": row["kind"],
+                    "excerpt": (chunk["text"] if chunk else "")[:800],
+                }
+            )
+    finally:
+        index.close()
+
+    if not payload:
+        raise InsufficientEvidence(
+            f"未找到符号或位置：{target}",
+            hint="确认索引包含该文件，或换用完整限定名",
+        )
+    if as_json:
+        console.print_json(json.dumps(payload, ensure_ascii=False))
+        return
+    for item in payload:
+        console.print(
+            f"[bold]{item['symbol']}[/bold] "
+            f"{item['file']}:{item['line_start']}-{item['line_end']} ({item['kind']})"
+        )
+        if item["excerpt"]:
+            console.print(item["excerpt"][:400])
+
+
+def _explain_lookup(index, target: str) -> list:  # noqa: ANN001
+    match = re.match(r"^(.+?):(\d+)$", target)
+    if match:
+        path, line = match.group(1), int(match.group(2))
+        rows = index.conn.execute(
+            "SELECT qualified_name, file_path, line_start, line_end, kind FROM symbols"
+            " WHERE file_path = ? AND line_start <= ? AND line_end >= ?"
+            " ORDER BY (line_end - line_start) ASC LIMIT 5",
+            (path, line, line),
+        ).fetchall()
+        if rows:
+            return list(rows)
+    rows = index.find_symbols(target)[:5]
+    if rows:
+        return list(rows)
+    return list(
+        index.conn.execute(
+            "SELECT qualified_name, file_path, line_start, line_end, kind FROM symbols"
+            " WHERE qualified_name LIKE ? LIMIT 5",
+            (f"%{target}%",),
+        ).fetchall()
+    )
 
 
 @runs_app.command("list")

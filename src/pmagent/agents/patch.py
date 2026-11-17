@@ -259,6 +259,22 @@ class PatchGenerator(Protocol):
     def generate(self, context: PatchContext, hypothesis: Hypothesis, count: int) -> list[str]: ...
 
 
+def build_patch_prompt(context: PatchContext, hypothesis: Hypothesis, count: int) -> str:
+    """代码片段来自仓库，属于不可信输入：包裹后再进提示词。"""
+    from pmagent.safety import wrap
+
+    return (
+        "为下面的缺陷生成最小 unified diff。要求：只改一个文件、不改公共头文件、"
+        "保持现有风格、不重排无关代码。\n"
+        f"假设：{hypothesis.statement}\n"
+        f"文件：{context.file}\n符号：{context.symbol}\n"
+        "代码：\n"
+        f"{wrap(context.body[:4000])}\n"
+        f"调用方：{context.callers}\n"
+        f"生成 {count} 个候选，输出 JSON {{patches: [diff字符串]}}"
+    )
+
+
 class LLMPatchGenerator:
     def __init__(self, gateway: Any, *, model_role: str = "reasoner") -> None:
         self.gateway = gateway
@@ -274,16 +290,11 @@ class LLMPatchGenerator:
         class _PatchList(BaseModel):
             patches: list[str] = []
 
-        prompt = (
-            "为下面的缺陷生成最小 unified diff。要求：只改一个文件、不改公共头文件、"
-            "保持现有风格、不重排无关代码。\n"
-            f"假设：{hypothesis.statement}\n"
-            f"文件：{context.file}\n符号：{context.symbol}\n"
-            f"代码：\n{context.body[:4000]}\n"
-            f"调用方：{context.callers}\n"
-            f"生成 {count} 个候选，输出 JSON {{patches: [diff字符串]}}"
+        result = complete_json(
+            self.gateway,
+            [{"role": "user", "content": build_patch_prompt(context, hypothesis, count)}],
+            _PatchList,
         )
-        result = complete_json(self.gateway, [{"role": "user", "content": prompt}], _PatchList)
         return result.value.patches[:count]
 
 

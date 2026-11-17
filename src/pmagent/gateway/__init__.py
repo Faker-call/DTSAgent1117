@@ -9,7 +9,7 @@ from pmagent.gateway.base import (
     ModelUnavailable,
     StructuredOutputError,
 )
-from pmagent.gateway.cost import CostMeter, cost_of, price_for
+from pmagent.gateway.cost import CostMeter, MeteredGateway, cost_of, price_for
 from pmagent.gateway.deepseek import DeepSeekGateway
 from pmagent.gateway.embedding import BailianEmbedding, EmbeddingCache
 from pmagent.gateway.keys import ApiKeys, load_api_keys, require_keys, scrub_secrets
@@ -20,6 +20,7 @@ __all__ = [
     "BailianEmbedding",
     "CircuitOpen",
     "CostMeter",
+    "MeteredGateway",
     "DeepSeekGateway",
     "EmbeddingCache",
     "GatewayError",
