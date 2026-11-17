@@ -1,0 +1,858 @@
+{
+  "source": "synthetic",
+  "generated_at": "2026-11-17T12:28:10.835665+00:00",
+  "count": 64,
+  "tickets": [
+    {
+      "id": "SYN-001",
+      "category": "usage",
+      "symptom": "调用 addLayer 后地图没有按预期刷新",
+      "root_cause": "缺少对样式重新加载的调用",
+      "root_cause_file": "src/mbgl/renderer/painter_fill.cpp",
+      "root_cause_symbol": "mbgl::Painter::drawFill",
+      "fix_commit": "33c9ee59",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-002",
+      "category": "usage",
+      "symptom": "调用 loadStyleURL 后地图没有按预期刷新",
+      "root_cause": "缺少对样式重新加载的调用",
+      "root_cause_file": "src/mbgl/renderer/layers/render_symbol_layer.cpp",
+      "root_cause_symbol": "mbgl::RenderSymbolLayer::render",
+      "fix_commit": "0f8fc64f",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-003",
+      "category": "usage",
+      "symptom": "自定义样式 JSON 部分字段被忽略",
+      "root_cause": "样式字段名称拼写与文档不一致",
+      "root_cause_file": "src/mbgl/layout/symbol_layout.cpp",
+      "root_cause_symbol": "mbgl::SymbolLayout::prepare",
+      "fix_commit": "b4ef54f3",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-004",
+      "category": "usage",
+      "symptom": "自定义样式 JSON 部分字段被忽略",
+      "root_cause": "样式字段名称拼写与文档不一致",
+      "root_cause_file": "src/mbgl/sprite/sprite_atlas.cpp",
+      "root_cause_symbol": "mbgl::SpriteAtlas::upload",
+      "fix_commit": "20e92b44",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-005",
+      "category": "usage",
+      "symptom": "初始化顺序不同导致地图空白",
+      "root_cause": "地图对象在样式加载前被复用",
+      "root_cause_file": "src/mbgl/gl/context.cpp",
+      "root_cause_symbol": "mbgl::gl::Context::createTexture",
+      "fix_commit": "e9316540",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-006",
+      "category": "usage",
+      "symptom": "初始化顺序不同导致地图空白",
+      "root_cause": "地图对象在样式加载前被复用",
+      "root_cause_file": "src/mbgl/geometry/line_atlas.cpp",
+      "root_cause_symbol": "mbgl::LineAtlas::getDashPattern",
+      "fix_commit": "9ef00f06",
+      "affected_versions": [
+        "5.5.2",
+        "6.0.1"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-007",
+      "category": "usage",
+      "symptom": "调用 setStyle 后地图没有按预期刷新",
+      "root_cause": "缺少对样式重新加载的调用",
+      "root_cause_file": "src/mbgl/geometry/line_atlas.cpp",
+      "root_cause_symbol": "mbgl::LineAtlas::getDashPattern",
+      "fix_commit": "9d7ca16b",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-008",
+      "category": "usage",
+      "symptom": "调用 addLayer 后地图没有按预期刷新",
+      "root_cause": "缺少对样式重新加载的调用",
+      "root_cause_file": "src/mbgl/text/glyph_manager.cpp",
+      "root_cause_symbol": "mbgl::GlyphManager::getGlyphs",
+      "fix_commit": "fae521f3",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-009",
+      "category": "usage",
+      "symptom": "初始化顺序不同导致地图空白",
+      "root_cause": "地图对象在样式加载前被复用",
+      "root_cause_file": "src/mbgl/text/glyph_manager.cpp",
+      "root_cause_symbol": "mbgl::GlyphManager::getGlyphs",
+      "fix_commit": "4d7c6f5a",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-010",
+      "category": "usage",
+      "symptom": "初始化顺序不同导致地图空白",
+      "root_cause": "地图对象在样式加载前被复用",
+      "root_cause_file": "src/mbgl/geometry/line_atlas.cpp",
+      "root_cause_symbol": "mbgl::LineAtlas::getDashPattern",
+      "fix_commit": "a245d89a",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-011",
+      "category": "usage",
+      "symptom": "自定义样式 JSON 部分字段被忽略",
+      "root_cause": "样式字段名称拼写与文档不一致",
+      "root_cause_file": "src/mbgl/renderer/layers/render_fill_extrusion_layer.cpp",
+      "root_cause_symbol": "mbgl::RenderFillExtrusionLayer::render",
+      "fix_commit": "ba8f9fd0",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-012",
+      "category": "usage",
+      "symptom": "初始化顺序不同导致地图空白",
+      "root_cause": "地图对象在样式加载前被复用",
+      "root_cause_file": "src/mbgl/layout/symbol_layout.cpp",
+      "root_cause_symbol": "mbgl::SymbolLayout::prepare",
+      "fix_commit": "34751f4c",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-013",
+      "category": "usage",
+      "symptom": "调用 setCamera 后地图没有按预期刷新",
+      "root_cause": "缺少对样式重新加载的调用",
+      "root_cause_file": "src/mbgl/renderer/layers/render_fill_extrusion_layer.cpp",
+      "root_cause_symbol": "mbgl::RenderFillExtrusionLayer::render",
+      "fix_commit": "3020ec22",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-014",
+      "category": "usage",
+      "symptom": "初始化顺序不同导致地图空白",
+      "root_cause": "地图对象在样式加载前被复用",
+      "root_cause_file": "src/mbgl/renderer/layers/render_fill_extrusion_layer.cpp",
+      "root_cause_symbol": "mbgl::RenderFillExtrusionLayer::render",
+      "fix_commit": "bdb798b9",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-015",
+      "category": "usage",
+      "symptom": "自定义样式 JSON 部分字段被忽略",
+      "root_cause": "样式字段名称拼写与文档不一致",
+      "root_cause_file": "src/mbgl/geometry/line_atlas.cpp",
+      "root_cause_symbol": "mbgl::LineAtlas::getDashPattern",
+      "fix_commit": "db8d97ad",
+      "affected_versions": [
+        "5.5.2",
+        "6.0.1"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-016",
+      "category": "usage",
+      "symptom": "调用 setCamera 后地图没有按预期刷新",
+      "root_cause": "缺少对样式重新加载的调用",
+      "root_cause_file": "src/mbgl/text/glyph_manager.cpp",
+      "root_cause_symbol": "mbgl::GlyphManager::getGlyphs",
+      "fix_commit": "c9e1092c",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-017",
+      "category": "usage",
+      "symptom": "自定义样式 JSON 部分字段被忽略",
+      "root_cause": "样式字段名称拼写与文档不一致",
+      "root_cause_file": "src/mbgl/renderer/painter_fill.cpp",
+      "root_cause_symbol": "mbgl::Painter::drawFill",
+      "fix_commit": "512bfb90",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-018",
+      "category": "usage",
+      "symptom": "初始化顺序不同导致地图空白",
+      "root_cause": "地图对象在样式加载前被复用",
+      "root_cause_file": "src/mbgl/renderer/painter_fill.cpp",
+      "root_cause_symbol": "mbgl::Painter::drawFill",
+      "fix_commit": "5fe3a39e",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-019",
+      "category": "usage",
+      "symptom": "调用 setCustomMapStyle 后地图没有按预期刷新",
+      "root_cause": "缺少对样式重新加载的调用",
+      "root_cause_file": "src/mbgl/sprite/sprite_atlas.cpp",
+      "root_cause_symbol": "mbgl::SpriteAtlas::upload",
+      "fix_commit": "fe59e277",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-020",
+      "category": "usage",
+      "symptom": "初始化顺序不同导致地图空白",
+      "root_cause": "地图对象在样式加载前被复用",
+      "root_cause_file": "src/mbgl/style/style_impl.cpp",
+      "root_cause_symbol": "mbgl::style::Style::Impl::loadJSON",
+      "fix_commit": "cce78817",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-021",
+      "category": "usage",
+      "symptom": "自定义样式 JSON 部分字段被忽略",
+      "root_cause": "样式字段名称拼写与文档不一致",
+      "root_cause_file": "src/mbgl/renderer/layers/render_symbol_layer.cpp",
+      "root_cause_symbol": "mbgl::RenderSymbolLayer::render",
+      "fix_commit": "71bea32c",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-022",
+      "category": "usage",
+      "symptom": "初始化顺序不同导致地图空白",
+      "root_cause": "地图对象在样式加载前被复用",
+      "root_cause_file": "src/mbgl/renderer/painter_fill.cpp",
+      "root_cause_symbol": "mbgl::Painter::drawFill",
+      "fix_commit": "527c20a2",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-023",
+      "category": "usage",
+      "symptom": "初始化顺序不同导致地图空白",
+      "root_cause": "地图对象在样式加载前被复用",
+      "root_cause_file": "src/mbgl/style/style_impl.cpp",
+      "root_cause_symbol": "mbgl::style::Style::Impl::loadJSON",
+      "fix_commit": "242b31ac",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-024",
+      "category": "usage",
+      "symptom": "自定义样式 JSON 部分字段被忽略",
+      "root_cause": "样式字段名称拼写与文档不一致",
+      "root_cause_file": "src/mbgl/sprite/sprite_atlas.cpp",
+      "root_cause_symbol": "mbgl::SpriteAtlas::upload",
+      "fix_commit": "db1002f2",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-025",
+      "category": "usage",
+      "symptom": "调用 loadStyleURL 后地图没有按预期刷新",
+      "root_cause": "缺少对样式重新加载的调用",
+      "root_cause_file": "src/mbgl/renderer/layers/render_fill_extrusion_layer.cpp",
+      "root_cause_symbol": "mbgl::RenderFillExtrusionLayer::render",
+      "fix_commit": "d703b351",
+      "affected_versions": [
+        "5.5.2",
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-026",
+      "category": "usage",
+      "symptom": "初始化顺序不同导致地图空白",
+      "root_cause": "地图对象在样式加载前被复用",
+      "root_cause_file": "src/mbgl/sprite/sprite_atlas.cpp",
+      "root_cause_symbol": "mbgl::SpriteAtlas::upload",
+      "fix_commit": "0d3118f2",
+      "affected_versions": [
+        "6.0.1",
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-027",
+      "category": "visual",
+      "symptom": "高缩放级别下路网出现断裂缝隙",
+      "root_cause": "三角化时瓦片边界顶点未闭合",
+      "root_cause_file": "src/mbgl/renderer/layers/render_symbol_layer.cpp",
+      "root_cause_symbol": "mbgl::RenderSymbolLayer::render",
+      "fix_commit": "2eafb1c6",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-028",
+      "category": "visual",
+      "symptom": "标注在旋转后错位",
+      "root_cause": "符号布局未考虑相机旋转矩阵",
+      "root_cause_file": "src/mbgl/gl/context.cpp",
+      "root_cause_symbol": "mbgl::gl::Context::createTexture",
+      "fix_commit": "365bdc63",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-029",
+      "category": "visual",
+      "symptom": "高缩放级别下路网出现断裂缝隙",
+      "root_cause": "三角化时瓦片边界顶点未闭合",
+      "root_cause_file": "src/mbgl/layout/symbol_layout.cpp",
+      "root_cause_symbol": "mbgl::SymbolLayout::prepare",
+      "fix_commit": "b056426b",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-030",
+      "category": "visual",
+      "symptom": "填充色在拼接处出现色带",
+      "root_cause": "颜色插值精度不足",
+      "root_cause_file": "src/mbgl/sprite/sprite_atlas.cpp",
+      "root_cause_symbol": "mbgl::SpriteAtlas::upload",
+      "fix_commit": "95cc768e",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-031",
+      "category": "visual",
+      "symptom": "填充色在拼接处出现色带",
+      "root_cause": "颜色插值精度不足",
+      "root_cause_file": "src/mbgl/geometry/line_atlas.cpp",
+      "root_cause_symbol": "mbgl::LineAtlas::getDashPattern",
+      "fix_commit": "533de3cd",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-032",
+      "category": "visual",
+      "symptom": "标注在旋转后错位",
+      "root_cause": "符号布局未考虑相机旋转矩阵",
+      "root_cause_file": "src/mbgl/renderer/tile_pyramid.cpp",
+      "root_cause_symbol": "mbgl::TilePyramid::update",
+      "fix_commit": "e679c503",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-033",
+      "category": "visual",
+      "symptom": "填充色在拼接处出现色带",
+      "root_cause": "颜色插值精度不足",
+      "root_cause_file": "src/mbgl/renderer/layers/render_symbol_layer.cpp",
+      "root_cause_symbol": "mbgl::RenderSymbolLayer::render",
+      "fix_commit": "ae7c9c26",
+      "affected_versions": [
+        "5.5.2",
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-034",
+      "category": "visual",
+      "symptom": "高缩放级别下路网出现断裂缝隙",
+      "root_cause": "三角化时瓦片边界顶点未闭合",
+      "root_cause_file": "src/mbgl/text/glyph_manager.cpp",
+      "root_cause_symbol": "mbgl::GlyphManager::getGlyphs",
+      "fix_commit": "65ae1e77",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-035",
+      "category": "visual",
+      "symptom": "填充色在拼接处出现色带",
+      "root_cause": "颜色插值精度不足",
+      "root_cause_file": "src/mbgl/gl/context.cpp",
+      "root_cause_symbol": "mbgl::gl::Context::createTexture",
+      "fix_commit": "6d3bd266",
+      "affected_versions": [
+        "6.0.1",
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-036",
+      "category": "visual",
+      "symptom": "高缩放级别下路网出现断裂缝隙",
+      "root_cause": "三角化时瓦片边界顶点未闭合",
+      "root_cause_file": "src/mbgl/sprite/sprite_atlas.cpp",
+      "root_cause_symbol": "mbgl::SpriteAtlas::upload",
+      "fix_commit": "4c912500",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-037",
+      "category": "visual",
+      "symptom": "标注在旋转后错位",
+      "root_cause": "符号布局未考虑相机旋转矩阵",
+      "root_cause_file": "src/mbgl/layout/symbol_layout.cpp",
+      "root_cause_symbol": "mbgl::SymbolLayout::prepare",
+      "fix_commit": "99ff6db0",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-038",
+      "category": "visual",
+      "symptom": "标注在旋转后错位",
+      "root_cause": "符号布局未考虑相机旋转矩阵",
+      "root_cause_file": "src/mbgl/sprite/sprite_atlas.cpp",
+      "root_cause_symbol": "mbgl::SpriteAtlas::upload",
+      "fix_commit": "e9424379",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-039",
+      "category": "visual",
+      "symptom": "标注在旋转后错位",
+      "root_cause": "符号布局未考虑相机旋转矩阵",
+      "root_cause_file": "src/mbgl/layout/symbol_layout.cpp",
+      "root_cause_symbol": "mbgl::SymbolLayout::prepare",
+      "fix_commit": "a544055b",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-040",
+      "category": "crash",
+      "symptom": "快速缩放导致崩溃",
+      "root_cause": "异步任务回调访问已释放对象",
+      "root_cause_file": "src/mbgl/renderer/layers/render_symbol_layer.cpp",
+      "root_cause_symbol": "mbgl::RenderSymbolLayer::render",
+      "fix_commit": "b70fd959",
+      "affected_versions": [
+        "6.0.1",
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-041",
+      "category": "crash",
+      "symptom": "多线程下偶发崩溃",
+      "root_cause": "共享纹理资源缺少同步",
+      "root_cause_file": "src/mbgl/gl/context.cpp",
+      "root_cause_symbol": "mbgl::gl::Context::createTexture",
+      "fix_commit": "021c0df1",
+      "affected_versions": [
+        "6.0.0",
+        "5.5.2"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-042",
+      "category": "crash",
+      "symptom": "加载大瓦片时进程崩溃",
+      "root_cause": "空指针未判空直接解引用",
+      "root_cause_file": "src/mbgl/renderer/tile_pyramid.cpp",
+      "root_cause_symbol": "mbgl::TilePyramid::update",
+      "fix_commit": "3bf08a64",
+      "affected_versions": [
+        "6.0.0",
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-043",
+      "category": "crash",
+      "symptom": "多线程下偶发崩溃",
+      "root_cause": "共享纹理资源缺少同步",
+      "root_cause_file": "src/mbgl/renderer/tile_pyramid.cpp",
+      "root_cause_symbol": "mbgl::TilePyramid::update",
+      "fix_commit": "eada2d1d",
+      "affected_versions": [
+        "6.0.0",
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-044",
+      "category": "crash",
+      "symptom": "多线程下偶发崩溃",
+      "root_cause": "共享纹理资源缺少同步",
+      "root_cause_file": "src/mbgl/layout/symbol_layout.cpp",
+      "root_cause_symbol": "mbgl::SymbolLayout::prepare",
+      "fix_commit": "ec834c97",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-045",
+      "category": "crash",
+      "symptom": "多线程下偶发崩溃",
+      "root_cause": "共享纹理资源缺少同步",
+      "root_cause_file": "src/mbgl/style/style_impl.cpp",
+      "root_cause_symbol": "mbgl::style::Style::Impl::loadJSON",
+      "fix_commit": "f38a6281",
+      "affected_versions": [
+        "6.0.1",
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-046",
+      "category": "crash",
+      "symptom": "多线程下偶发崩溃",
+      "root_cause": "共享纹理资源缺少同步",
+      "root_cause_file": "src/mbgl/text/glyph_manager.cpp",
+      "root_cause_symbol": "mbgl::GlyphManager::getGlyphs",
+      "fix_commit": "230adc18",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-047",
+      "category": "crash",
+      "symptom": "加载大瓦片时进程崩溃",
+      "root_cause": "空指针未判空直接解引用",
+      "root_cause_file": "src/mbgl/layout/symbol_layout.cpp",
+      "root_cause_symbol": "mbgl::SymbolLayout::prepare",
+      "fix_commit": "8f84e45c",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-048",
+      "category": "crash",
+      "symptom": "快速缩放导致崩溃",
+      "root_cause": "异步任务回调访问已释放对象",
+      "root_cause_file": "src/mbgl/style/style_impl.cpp",
+      "root_cause_symbol": "mbgl::style::Style::Impl::loadJSON",
+      "fix_commit": "9870fc4a",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.1"
+    },
+    {
+      "id": "SYN-049",
+      "category": "crash",
+      "symptom": "快速缩放导致崩溃",
+      "root_cause": "异步任务回调访问已释放对象",
+      "root_cause_file": "src/mbgl/layout/symbol_layout.cpp",
+      "root_cause_symbol": "mbgl::SymbolLayout::prepare",
+      "fix_commit": "5943278d",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-050",
+      "category": "crash",
+      "symptom": "快速缩放导致崩溃",
+      "root_cause": "异步任务回调访问已释放对象",
+      "root_cause_file": "src/mbgl/renderer/painter_fill.cpp",
+      "root_cause_symbol": "mbgl::Painter::drawFill",
+      "fix_commit": "f743044d",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-051",
+      "category": "crash",
+      "symptom": "快速缩放导致崩溃",
+      "root_cause": "异步任务回调访问已释放对象",
+      "root_cause_file": "src/mbgl/renderer/painter_fill.cpp",
+      "root_cause_symbol": "mbgl::Painter::drawFill",
+      "fix_commit": "43e9cad9",
+      "affected_versions": [
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-052",
+      "category": "crash",
+      "symptom": "加载大瓦片时进程崩溃",
+      "root_cause": "空指针未判空直接解引用",
+      "root_cause_file": "src/mbgl/style/style_impl.cpp",
+      "root_cause_symbol": "mbgl::style::Style::Impl::loadJSON",
+      "fix_commit": "f2719b06",
+      "affected_versions": [
+        "6.0.1",
+        "5.5.2"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-053",
+      "category": "perf",
+      "symptom": "首屏加载变慢",
+      "root_cause": "瓦片预取策略过于激进",
+      "root_cause_file": "src/mbgl/gl/context.cpp",
+      "root_cause_symbol": "mbgl::gl::Context::createTexture",
+      "fix_commit": "e14485ee",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-054",
+      "category": "perf",
+      "symptom": "首屏加载变慢",
+      "root_cause": "瓦片预取策略过于激进",
+      "root_cause_file": "src/mbgl/style/style_impl.cpp",
+      "root_cause_symbol": "mbgl::style::Style::Impl::loadJSON",
+      "fix_commit": "4438fe03",
+      "affected_versions": [
+        "6.0.1",
+        "6.0.0"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-055",
+      "category": "perf",
+      "symptom": "内存持续增长",
+      "root_cause": "纹理缓存未按上限淘汰",
+      "root_cause_file": "src/mbgl/layout/symbol_layout.cpp",
+      "root_cause_symbol": "mbgl::SymbolLayout::prepare",
+      "fix_commit": "0a520d7d",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-056",
+      "category": "perf",
+      "symptom": "内存持续增长",
+      "root_cause": "纹理缓存未按上限淘汰",
+      "root_cause_file": "src/mbgl/sprite/sprite_atlas.cpp",
+      "root_cause_symbol": "mbgl::SpriteAtlas::upload",
+      "fix_commit": "a87764ec",
+      "affected_versions": [
+        "6.0.1",
+        "6.0.0"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-057",
+      "category": "perf",
+      "symptom": "内存持续增长",
+      "root_cause": "纹理缓存未按上限淘汰",
+      "root_cause_file": "src/mbgl/renderer/painter_fill.cpp",
+      "root_cause_symbol": "mbgl::Painter::drawFill",
+      "fix_commit": "7e696937",
+      "affected_versions": [
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-058",
+      "category": "perf",
+      "symptom": "首屏加载变慢",
+      "root_cause": "瓦片预取策略过于激进",
+      "root_cause_file": "src/mbgl/sprite/sprite_atlas.cpp",
+      "root_cause_symbol": "mbgl::SpriteAtlas::upload",
+      "fix_commit": "9d42dcfe",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-059",
+      "category": "perf",
+      "symptom": "帧率下降到 20fps",
+      "root_cause": "绘制调用未合批",
+      "root_cause_file": "src/mbgl/text/glyph_manager.cpp",
+      "root_cause_symbol": "mbgl::GlyphManager::getGlyphs",
+      "fix_commit": "9f8c0c2a",
+      "affected_versions": [
+        "6.0.1",
+        "5.5.2"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-060",
+      "category": "perf",
+      "symptom": "帧率下降到 20fps",
+      "root_cause": "绘制调用未合批",
+      "root_cause_file": "src/mbgl/renderer/layers/render_fill_extrusion_layer.cpp",
+      "root_cause_symbol": "mbgl::RenderFillExtrusionLayer::render",
+      "fix_commit": "37f2faa7",
+      "affected_versions": [
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-061",
+      "category": "perf",
+      "symptom": "帧率下降到 20fps",
+      "root_cause": "绘制调用未合批",
+      "root_cause_file": "src/mbgl/renderer/tile_pyramid.cpp",
+      "root_cause_symbol": "mbgl::TilePyramid::update",
+      "fix_commit": "e39f2484",
+      "affected_versions": [
+        "6.0.1",
+        "6.0.0"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-062",
+      "category": "perf",
+      "symptom": "帧率下降到 20fps",
+      "root_cause": "绘制调用未合批",
+      "root_cause_file": "src/mbgl/renderer/tile_pyramid.cpp",
+      "root_cause_symbol": "mbgl::TilePyramid::update",
+      "fix_commit": "a66c7cf0",
+      "affected_versions": [
+        "5.5.2",
+        "6.0.1"
+      ],
+      "sdk_version": "6.0.0"
+    },
+    {
+      "id": "SYN-063",
+      "category": "perf",
+      "symptom": "内存持续增长",
+      "root_cause": "纹理缓存未按上限淘汰",
+      "root_cause_file": "src/mbgl/geometry/line_atlas.cpp",
+      "root_cause_symbol": "mbgl::LineAtlas::getDashPattern",
+      "fix_commit": "41dbb832",
+      "affected_versions": [
+        "5.5.2",
+        "6.0.0"
+      ],
+      "sdk_version": "5.5.2"
+    },
+    {
+      "id": "SYN-064",
+      "category": "perf",
+      "symptom": "内存持续增长",
+      "root_cause": "纹理缓存未按上限淘汰",
+      "root_cause_file": "src/mbgl/gl/context.cpp",
+      "root_cause_symbol": "mbgl::gl::Context::createTexture",
+      "fix_commit": "2b69e12c",
+      "affected_versions": [
+        "6.0.1",
+        "6.0.0"
+      ],
+      "sdk_version": "6.0.0"
+    }
+  ]
+}
