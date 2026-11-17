@@ -43,6 +43,8 @@ FEW_SHOT = [
 
 
 class GeneratedHypothesis(BaseModel):
+    model_config = {"extra": "ignore"}
+
     statement: str
     pipeline_stage: str = "unknown"
     root_cause: str = ""
@@ -109,6 +111,7 @@ class DiagnosisAgent:
         self.repo_root = Path(repo_root) if repo_root else None
         self.gateway = gateway
         self.broker = broker
+        self.last_model_error: str | None = None
         self.index_version = index_version or getattr(
             getattr(code_index, "manifest", None), "commit", None
         )
@@ -309,6 +312,12 @@ class DiagnosisAgent:
                         "content": (
                             "你是地图渲染引擎的缺陷定位助手。基于候选给出根因假设，"
                             "每条假设必须填写 contradicting（反证列表，无则填 ['无反证']）。"
+                            "严格输出 JSON 对象，形如 "
+                            '{"hypotheses":[{"statement":"一句话根因",'
+                            '"pipeline_stage":"geometry","root_cause":"...",'
+                            '"symbol":"pm::Alpha","file":"src/a.cc",'
+                            '"line_start":2,"line_end":2,"contradicting":["无反证"]}]}。'
+                            "所有字段都必须是字符串或整数，不要嵌套对象。"
                             f"参考示例：{FEW_SHOT}"
                         ),
                     },
@@ -317,11 +326,20 @@ class DiagnosisAgent:
                 HypothesisList,
                 role="reasoner",
             )
-        except Exception:  # noqa: BLE001 - 模型不可用回退确定性生成
+        except Exception as exc:  # noqa: BLE001 - 模型不可用回退确定性生成
+            self.last_model_error = f"{type(exc).__name__}: {exc}"
             return []
 
         hypotheses: list[Hypothesis] = []
         for index, item in enumerate(result.value.hypotheses, start=1):
+            file = item.file
+            line_start = item.line_start
+            line_end = item.line_end
+            if item.symbol:
+                resolved = self._resolve_symbol(item.symbol)
+                if resolved is not None:
+                    # 索引里的位置是权威值，覆盖模型猜测的行号
+                    file, line_start, line_end = resolved
             contradicting = [
                 EvidenceRef(evidence_type="code_symbol", ref=text, explanation="模型给出的反证")
                 for text in item.contradicting
@@ -335,13 +353,13 @@ class DiagnosisAgent:
                     symbols=[item.symbol] if item.symbol else [],
                     code_locations=[
                         CodeLocation(
-                            file=item.file or "",
-                            line_start=item.line_start,
-                            line_end=item.line_end or item.line_start,
+                            file=file,
+                            line_start=line_start,
+                            line_end=line_end or line_start,
                             symbol=item.symbol or None,
                         )
                     ]
-                    if item.file
+                    if file
                     else [],
                     contradicting=contradicting,
                     confidence_basis="模型生成，待证据评分",
@@ -350,10 +368,38 @@ class DiagnosisAgent:
             )
         return hypotheses
 
+    def _resolve_symbol(self, symbol: str) -> tuple[str, int, int] | None:
+        leaf = symbol.split("(")[0].split("::")[-1].strip()
+        if not leaf:
+            return None
+        row = self.code_index.conn.execute(
+            "SELECT file_path, line_start, line_end FROM symbols"
+            " WHERE (qualified_name = ? OR qualified_name LIKE ?)"
+            " AND kind IN ('function', 'declaration')"
+            " ORDER BY (line_end - line_start) ASC LIMIT 1",
+            (leaf, f"%::{leaf}"),
+        ).fetchone()
+        if row is None:
+            row = self.code_index.conn.execute(
+                "SELECT file_path, line_start, line_end FROM symbols"
+                " WHERE qualified_name LIKE ? ORDER BY (line_end - line_start) ASC LIMIT 1",
+                (f"%{leaf}%",),
+            ).fetchone()
+        if row is None:
+            return None
+        return str(row["file_path"]), int(row["line_start"]), int(row["line_end"])
+
     # -- 评分 -------------------------------------------------------------
     def _score(self, hypothesis: Hypothesis, slices: list[CandidateSlice]) -> Hypothesis:
         item = next(
-            (candidate for candidate in slices if candidate.candidate.symbol in hypothesis.symbols),
+            (
+                candidate
+                for candidate in slices
+                if any(
+                    self._same_symbol(candidate.candidate.symbol, symbol)
+                    for symbol in hypothesis.symbols
+                )
+            ),
             None,
         )
         classes: set[str] = set()
@@ -396,6 +442,13 @@ class DiagnosisAgent:
             + f"；原始分 {base:.2f}"
         )
         return hypothesis
+
+    @staticmethod
+    def _same_symbol(left: str, right: str) -> bool:
+        def leaf(value: str) -> str:
+            return value.split("(")[0].split("::")[-1].strip()
+
+        return leaf(left) == leaf(right) and bool(leaf(left))
 
     @staticmethod
     def _uncertainty(hypotheses: list[Hypothesis]) -> Uncertainty:

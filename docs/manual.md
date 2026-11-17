@@ -46,6 +46,9 @@ pmagent diagnose "放大后路网断裂" \
 # 并行检索分支后再收敛（分支数、加速比、去重数会打印）
 pmagent diagnose "..." --multi-agent --repo ... --index-root ...
 
+# 完全不调用模型（无密钥或断网时同样自动降级）
+pmagent diagnose "..." --offline --repo ... --index-root ...
+
 # 中断后复用已保存证据上下文
 pmagent diagnose --resume <run_id> --repo ... --index-root ...
 
@@ -54,6 +57,12 @@ pmagent explain pm::Painter::drawFill --index-root corpus/.index
 ```
 
 产物：`artifacts/reports/<id>.md` 与 `.json`（供 `patch generate` 使用）。
+
+`pmagent ask` 与 `pmagent diagnose` 检测到 `DEEPSEEK_API_KEY` 时会自动启用模型路径（意图仲裁、假设生成、截图描述），并在结束时打印本次成本；`--offline` 可强制关闭。密钥只从环境变量读取：
+
+```bash
+export DEEPSEEK_API_KEY=<key>      # Windows: setx DEEPSEEK_API_KEY <key>
+```
 
 ## 5. 补丁
 

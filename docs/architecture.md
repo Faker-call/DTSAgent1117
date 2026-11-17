@@ -76,6 +76,7 @@ src/pmagent/
 7. 补丁生成的模型调用经 `MeteredGateway` 记账，超出 `budget.max_cost_cny` 立即终止；
 8. 假设生成前用 `ContextCompressor` 把候选切片压到预算内，`BudgetLedger` 按阶段预留/消耗 token；
 9. 模型提示词中的仓库内容统一经 `wrap()` 包裹为不可信数据。
+10. 检测到 `DEEPSEEK_API_KEY` 时，`ask` 启用意图模型仲裁、`diagnose` 启用模型假设生成与截图描述；`--offline` 强制关闭，调用成本按 token 记账并打印。
 
 ## 待实现
 

@@ -77,7 +77,7 @@ from pmagent.eval import (
     compare_reports,
     load_cases,
 )
-from pmagent.evidence import EvidenceNormalizer
+from pmagent.evidence import EvidenceNormalizer, ModelDescriber, VisualAnalyzer
 from pmagent.knowledge.corpus import DocCorpus
 from pmagent.knowledge.index import (
     CodeIndex,
@@ -168,6 +168,17 @@ def _require(permission: Permission | None = None) -> User:
     if decision.decision != "allow":
         raise PermissionDenied(explain_denial(decision))
     return user
+
+
+def _model_gateway(*, offline: bool, cfg):  # noqa: ANN001, ANN202
+    """有密钥且未离线时返回带计量的网关；否则返回 None，走确定性路径。"""
+    from pmagent.gateway import CostMeter, DeepSeekGateway, MeteredGateway
+
+    meter = CostMeter(max_cost_cny=cfg.budget.max_cost_cny)
+    if offline or not os.environ.get("DEEPSEEK_API_KEY"):
+        return None, meter
+    gateway = DeepSeekGateway(cfg.model)
+    return MeteredGateway(gateway, meter), meter
 
 
 # ---------------------------------------------------------------------------
@@ -325,6 +336,8 @@ def ask_cmd(
 ) -> None:
     """交互式或单次问答：意图识别 → 检索 → 引用校验。"""
     _require(Permission.QUERY_ASK)
+    cfg = load_config()
+    gateway, meter = _model_gateway(offline=offline, cfg=cfg)
     store = MemoryStore()
     try:
         session_id = session or uuid.uuid4().hex[:8]
@@ -353,9 +366,10 @@ def ask_cmd(
         dialogue = DialogueManager(
             state,
             classifier=IntentClassifier(
+                gateway=gateway,
                 interactive=not offline
                 and not non_interactive
-                and sys.stdin.isatty()
+                and sys.stdin.isatty(),
             ),
         )
         turn = dialogue.handle(question)
@@ -440,6 +454,7 @@ def ask_cmd(
                     ],
                     "confidence": answer.confidence,
                     "notes": answer.notes,
+                    "cost": meter.snapshot(),
                 },
                 ensure_ascii=False,
             )
@@ -453,6 +468,10 @@ def ask_cmd(
         console.print(example)
     for note in answer.notes:
         console.print(f"[yellow]注意[/yellow] {note}")
+    if meter.total_tokens:
+        console.print(
+            f"[dim]成本：{meter.total_cny:.4f} 元 / {meter.total_tokens} tokens[/dim]"
+        )
     console.print(f"[dim]意图：{decision.primary}（{decision.channel}）[/dim]")
 
 
@@ -473,10 +492,15 @@ def diagnose_cmd(
     multi_agent: bool = typer.Option(
         False, "--multi-agent", help="并行扇出检索分支后再收敛"
     ),
+    offline: bool = typer.Option(
+        False, "--offline", help="不调用模型，仅走规则与确定性定位"
+    ),
     as_json: bool = typer.Option(False, "--json"),
 ) -> None:
     """问题定位：解析证据并检查充分性。"""
     user = _require(Permission.DIAGNOSE_RUN)
+    cfg = load_config()
+    gateway, meter = _model_gateway(offline=offline, cfg=cfg)
     store = ArtifactStore()
     store.ensure_layout()
     if resume:
@@ -494,7 +518,14 @@ def diagnose_cmd(
         if not as_json:
             console.print(f"[dim]续跑 {resume}：复用已保存的证据上下文[/dim]")
     else:
-        normalized = EvidenceNormalizer().build(
+        visual = (
+            VisualAnalyzer(
+                describer=ModelDescriber(gateway, cfg.model.vision_model)
+            )
+            if gateway is not None
+            else VisualAnalyzer()
+        )
+        normalized = EvidenceNormalizer(visual_analyzer=visual).build(
             query,
             logs=log,
             stacks=stack,
@@ -545,7 +576,6 @@ def diagnose_cmd(
             hint="按上面列出的补充材料清单准备后重试",
         )
 
-    cfg = load_config()
     root = Path(index_root) if index_root else cfg.index.root
     manifest = IndexBuilder(root).current_manifest()
     if manifest is None:
@@ -573,6 +603,7 @@ def diagnose_cmd(
             index_version=manifest.commit,
             broker=broker,
             case_prior=CaseFeedback(memory).retrieval_prior,
+            gateway=gateway,
         )
         outcome = DiagnosisRunner(
             agent,
@@ -624,6 +655,10 @@ def diagnose_cmd(
     )
     console.print(f"[dim]报告：{report_path}[/dim]")
     console.print(f"[dim]首要结论：{top.id}[/dim]")
+    if meter.total_tokens:
+        console.print(
+            f"[dim]成本：{meter.total_cny:.4f} 元 / {meter.total_tokens} tokens[/dim]"
+        )
 
 
 @patch_app.command("generate")

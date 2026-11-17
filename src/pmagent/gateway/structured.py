@@ -79,6 +79,18 @@ def extract_json_object(text: str) -> dict[str, Any]:
     raise ValueError("响应中没有可解析的 JSON 对象")
 
 
+def _mentions_json(messages: list[Any]) -> bool:
+    for message in messages:
+        content = (
+            message.get("content")
+            if isinstance(message, dict)
+            else getattr(message, "content", "")
+        )
+        if isinstance(content, str) and "json" in content.lower():
+            return True
+    return False
+
+
 def complete_json(
     gateway: Any,
     messages: list[dict[str, Any]] | list[Message],
@@ -90,6 +102,12 @@ def complete_json(
 ) -> StructuredResult:
     """请求结构化输出；解析或校验失败时携带错误提示重试一次。"""
     conversation: list[Any] = list(messages)
+    if not _mentions_json(conversation):
+        # DeepSeek 的 json_object 模式要求提示词里出现 "json"
+        conversation = [
+            {"role": "system", "content": "只输出一个 JSON 对象，不要额外解释。"},
+            *conversation,
+        ]
     last_error = "未知错误"
 
     for attempt in range(1, attempts + 1):
@@ -105,6 +123,7 @@ def complete_json(
             return StructuredResult(value=value, response=response)
         except (ValueError, ValidationError) as exc:
             last_error = str(exc).splitlines()[0]
+            last_error += f" | 响应片段：{response.text[:200]}"
             if attempt >= attempts:
                 break
             conversation = [

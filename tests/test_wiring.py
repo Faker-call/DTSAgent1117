@@ -447,6 +447,62 @@ def test_cli_diagnose_multi_agent(tmp_path: Path) -> None:
     assert "多 Agent" in result.stdout
 
 
+def test_complete_json_injects_json_hint() -> None:
+    from pydantic import BaseModel
+
+    from pmagent.gateway import complete_json
+    from pmagent.gateway.base import LLMResponse
+
+    captured: list[list] = []
+
+    class FakeGateway:
+        def complete(self, messages, **kwargs):  # noqa: ANN001
+            captured.append(list(messages))
+            return LLMResponse(text='{"value": "ok"}', model="fake")
+
+    class Payload(BaseModel):
+        value: str
+
+    result = complete_json(FakeGateway(), [{"role": "user", "content": "返回结构"}], Payload)
+    assert result.value.value == "ok"
+    first = captured[0][0]
+    content = first["content"] if isinstance(first, dict) else first.content
+    assert "JSON" in content
+
+
+def test_agent_model_path_resolves_location(tmp_path: Path, indexed) -> None:  # noqa: ANN001
+    import json as _json
+
+    from pmagent.gateway.base import LLMResponse
+
+    index, repo = indexed
+    captured: list[str] = []
+
+    class FakeGateway:
+        def complete(self, messages, **kwargs):  # noqa: ANN001
+            captured.append(str(messages))
+            payload = {
+                "hypotheses": [
+                    {
+                        "statement": "Alpha 未校验参数",
+                        "pipeline_stage": "geometry",
+                        "symbol": "pm::Alpha(int n)",
+                        "contradicting": ["无反证"],
+                    }
+                ]
+            }
+            return LLMResponse(text=_json.dumps(payload), model="fake")
+
+    agent = DiagnosisAgent(index, repo_root=repo, gateway=FakeGateway())
+    context = _context(tmp_path)
+    stage, _candidates, slices = agent.prepare(context)
+    hypotheses = agent.hypothesize(context, stage.stage, slices)
+    assert hypotheses
+    location = hypotheses[0].code_locations[0]
+    assert location.file == "a.cc"
+    assert location.line_start == 2
+
+
 def test_cli_diagnose_writes_progress_and_audit(tmp_path: Path) -> None:
     assert (
         _run(tmp_path, "auth", "init", "--username", "admin", "--password", "secret123").returncode
